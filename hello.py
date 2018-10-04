@@ -5,6 +5,17 @@ from werkzeug.serving import run_with_reloader
 from werkzeug.debug import DebuggedApplication
 from flask_sqlalchemy import SQLAlchemy
 from forms import RegistrationForm, LoginForm
+from flask_bcrypt import Bcrypt
+import psycopg2, itertools
+
+bcrypt = Bcrypt()
+
+try:
+    conn = psycopg2.connect("dbname='my_db' user='postgres' host='localhost' password='!dangqhuy!'")
+except:
+    print "I am ubable to connect to the database"
+
+cur = conn.cursor()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '5791628bb0b13ce0c676dfde280ba245'
@@ -51,6 +62,13 @@ def about():
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
+        try:
+            cur.execute("INSERT INTO my_user (email, usename, password) VALUES (%s, %s, %s)",
+            ("dangqhuy@gmail.com", "dangqhuy", bcrypt.generate_password_hash(form.password.data).decode('utf-8')))
+            conn.commit()
+        except:
+            flash('Sign Up Unsuccesful', 'danger')
+            return redirect(url_for('register'))
         flash('Account created for {username}!'.format(username=form.username.data), 'success')
         return redirect(url_for('home'))
     return render_template('register.html', title='Register', form=form)
@@ -59,10 +77,21 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
+    cur.execute("SELECT * FROM my_user")
+    users = cur.fetchall()
+    keys = ('id', 'email', 'username', 'password')
+    dict_users = []
+    
+    for user in users:
+        dict_users.append(dict(itertools.izip(keys, user)))
+    
+    
     if form.validate_on_submit():
-        if form.email.data == 'dangqhuy@gmail.com' and form.password.data == '123qweasd':
-            flash('You have been logged in!', 'success')
-            return redirect(url_for('home'))
+        for user in dict_users:
+            if form.email.data == user.get('email') and bcrypt.check_password_hash(user.get('password'), form.password.data):
+                flash('You have been logged in!', 'success')
+                
+                return redirect(url_for('home'))
         else:
             flash('Login Unsuccessful. Please check username and password', 'warning')
     return render_template('login.html', title='Login', form=form)
