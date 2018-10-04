@@ -4,11 +4,10 @@ from flask import Flask, render_template, make_response, request, flash, redirec
 from werkzeug.serving import run_with_reloader
 from werkzeug.debug import DebuggedApplication
 from flask_sqlalchemy import SQLAlchemy
-from forms import RegistrationForm, LoginForm
+from forms import RegistrationForm, LoginForm, PostForm
 from flask_bcrypt import Bcrypt
 import psycopg2, itertools
-
-bcrypt = Bcrypt()
+import json
 
 try:
     conn = psycopg2.connect("dbname='my_db' user='postgres' host='localhost' password='!dangqhuy!'")
@@ -18,6 +17,8 @@ except:
 cur = conn.cursor()
 
 app = Flask(__name__)
+bcrypt = Bcrypt(app)
+
 app.config['SECRET_KEY'] = '5791628bb0b13ce0c676dfde280ba245'
 POSTGRES = {
     'user': 'postgres',
@@ -50,7 +51,10 @@ monkey.patch_all()
 
 @app.route('/')
 def home():
-    return render_template('home.html', posts=posts)
+    if request.cookies.get('user'):
+        user = json.loads(request.cookies.get('user'))
+        return render_template('home.html', user=user, posts=posts)
+    return render_template('home.html', user=None, posts=posts)
 
 
 @app.route('/about')
@@ -63,8 +67,8 @@ def register():
     form = RegistrationForm()
     if form.validate_on_submit():
         try:
-            cur.execute("INSERT INTO my_user (email, usename, password) VALUES (%s, %s, %s)",
-            ("dangqhuy@gmail.com", "dangqhuy", bcrypt.generate_password_hash(form.password.data).decode('utf-8')))
+            cur.execute("INSERT INTO my_user (email, username, password) VALUES (%s, %s, %s)",
+            (form.email.data, form.username.data, bcrypt.generate_password_hash(form.password.data).decode('utf-8')))
             conn.commit()
         except:
             flash('Sign Up Unsuccesful', 'danger')
@@ -79,23 +83,46 @@ def login():
     form = LoginForm()
     cur.execute("SELECT * FROM my_user")
     users = cur.fetchall()
-    keys = ('id', 'email', 'username', 'password')
+    keys = ('id', 'password', 'username', 'email')
     dict_users = []
     
     for user in users:
         dict_users.append(dict(itertools.izip(keys, user)))
-    
+
     
     if form.validate_on_submit():
         for user in dict_users:
             if form.email.data == user.get('email') and bcrypt.check_password_hash(user.get('password'), form.password.data):
                 flash('You have been logged in!', 'success')
-                
-                return redirect(url_for('home'))
+                resp = app.make_response(redirect(url_for('home')))
+                resp.set_cookie('user', json.dumps(user))
+                return resp
         else:
             flash('Login Unsuccessful. Please check username and password', 'warning')
     return render_template('login.html', title='Login', form=form)
 
+
+@app.route('/logout')
+def logout():
+    resp = make_response(redirect(url_for('home')))
+    resp.set_cookie('user', expires=0)
+    return resp
+
+
+@app.route('/post', methods=['GET', 'POST'])
+def post():
+    form = PostForm()
+    user = json.loads(request.cookies.get('user'))
+    if form.validate_on_submit():
+        try:
+            cur.execute('INSERT INTO post (title, content, user_id) VALUES (%s, %s, %s)',
+            (form.title.data, form.content.data, request.cookies.get('user')))
+            conn.commit()
+        except:
+            flash('Post Unsuccessful', 'danger')
+        flash('Post Successful', 'success')
+        return redirect(url_for('home'))
+    return render_template('post.html', title='Post', form=form, user=user)
 
 @run_with_reloader
 def run_server():
