@@ -7,7 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 from forms import RegistrationForm, LoginForm, PostForm
 from flask_bcrypt import Bcrypt
 import psycopg2, itertools
-import json
+import json, datetime
 
 try:
     conn = psycopg2.connect("dbname='my_db' user='postgres' host='localhost' password='!dangqhuy!'")
@@ -28,18 +28,34 @@ POSTGRES = {
     'port': '5432',
 }
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://%(user)s:\
-    %(pw)s@%(host)s:%(port)s/%(db)s' % POSTGRES
-db = SQLAlchemy(app)
+
 monkey.patch_all()
 
 
 @app.route('/')
 def home():
     user = None
+    keys = ('email', 'author', 'title', 'content', 'date_posted')
+    posts = []
+    dict_posts = []
+    with conn.cursor() as cur:
+        cur.execute('''SELECT 
+                        my_user.email,
+                        my_user.username,
+                        post.title,
+                        post.content,
+                        post.created
+                        FROM my_user
+                        INNER JOIN post ON my_user.id = post.user_id
+                    ''')
+        posts = cur.fetchall()
+    for post in posts:
+        dict_posts.append(dict(itertools.izip(keys, post)))
+
+    print(posts)
     if request.cookies.get('user'):
         user = json.loads(request.cookies.get('user'))
-    return render_template('home.html', user=user, posts=posts)
+    return render_template('home.html', user=user, posts=dict_posts)
 
 
 @app.route('/about')
@@ -98,10 +114,11 @@ def logout():
 def post():
     form = PostForm()
     user = json.loads(request.cookies.get('user'))
+
     if form.validate_on_submit():
         try:
-            cur.execute('INSERT INTO post (title, content, user_id) VALUES (%s, %s, %s)',
-            (form.title.data, form.content.data, request.cookies.get('user')))
+            cur.execute('INSERT INTO post (title, content, user_id, created) VALUES (%s, %s, %s, %s)',
+            (form.title.data, form.content.data, user.get('id'), datetime.datetime.now()))
             conn.commit()
         except:
             flash('Post Unsuccessful', 'danger')
