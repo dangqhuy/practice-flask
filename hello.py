@@ -47,6 +47,7 @@ def home():
                         post.created
                         FROM my_user
                         INNER JOIN post ON my_user.id = post.user_id
+                        ORDER BY post.created DESC
                     ''')
         posts = cur.fetchall()
     for post in posts:
