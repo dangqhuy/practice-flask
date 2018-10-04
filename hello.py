@@ -27,22 +27,7 @@ POSTGRES = {
     'host': 'localhost',
     'port': '5432',
 }
-posts = [
-    {
-        'title': 'POST 1',
-        'author': 'Quoc Huy',
-        'content': 'con cho can con meo',
-        'date_posted': 'Oct 4, 2018'
-        
-    },
-    {
-        'title': 'POST 2',
-        'author': 'Huy',
-        'content': 'con meo can con cho',
-        'date_posted': 'Oct 5, 2018'
-        
-    }
-]
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://%(user)s:\
     %(pw)s@%(host)s:%(port)s/%(db)s' % POSTGRES
 db = SQLAlchemy(app)
@@ -51,10 +36,10 @@ monkey.patch_all()
 
 @app.route('/')
 def home():
+    user = None
     if request.cookies.get('user'):
         user = json.loads(request.cookies.get('user'))
-        return render_template('home.html', user=user, posts=posts)
-    return render_template('home.html', user=None, posts=posts)
+    return render_template('home.html', user=user, posts=posts)
 
 
 @app.route('/about')
