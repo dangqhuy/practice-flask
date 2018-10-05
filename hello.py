@@ -17,17 +17,8 @@ except:
 cur = conn.cursor()
 
 app = Flask(__name__)
-bcrypt = Bcrypt(app)
-
 app.config['SECRET_KEY'] = '95cd8af52647b2a8e726d3badf339c'
-POSTGRES = {
-    'user': 'postgres',
-    'pw': '!dangqhuy!',
-    'db': 'my_db',
-    'host': 'localhost',
-    'port': '5432',
-}
-
+bcrypt = Bcrypt()
 
 monkey.patch_all()
 
