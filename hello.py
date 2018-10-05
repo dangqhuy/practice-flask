@@ -7,7 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 from forms import RegistrationForm, LoginForm
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = '5791628bb0b13ce0c676dfde280ba245'
+app.config['SECRET_KEY'] = '95cd8af52647b2a8e726d3badf339c'
 POSTGRES = {
     'user': 'postgres',
     'pw': '!dangqhuy!',
@@ -33,8 +33,19 @@ posts = [
 ]
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://%(user)s:\
     %(pw)s@%(host)s:%(port)s/%(db)s' % POSTGRES
-db = SQLAlchemy(app)
 monkey.patch_all()
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(20), unique=True, nullable=False)
+    username = db.Column(db.String(120), unique=True, nullable=False)
+    image_file = db.Column(db.String(120), nullable=True)
+    password = db.Conlumn(db.String(60), nullable=False)
+
+    def __repr__(self):
+        return "User('{username}', '{email}', '{image_file}')"
+        .format(username=self.username, email=self.email, image_file=self.image_file)
+
 
 
 @app.route('/')
