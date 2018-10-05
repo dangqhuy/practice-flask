@@ -3,7 +3,6 @@ from gevent import monkey
 from flask import Flask, render_template, make_response, request, flash, redirect, url_for
 from werkzeug.serving import run_with_reloader
 from werkzeug.debug import DebuggedApplication
-from flask_sqlalchemy import SQLAlchemy
 from forms import RegistrationForm, LoginForm, PostForm
 from flask_bcrypt import Bcrypt
 import psycopg2, itertools
