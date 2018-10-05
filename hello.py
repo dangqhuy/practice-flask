@@ -43,7 +43,6 @@ def home():
     for post in posts:
         dict_posts.append(dict(itertools.izip(keys, post)))
 
-    print(posts)
     if request.cookies.get('user'):
         user = json.loads(request.cookies.get('user'))
     return render_template('home.html', user=user, posts=dict_posts)
