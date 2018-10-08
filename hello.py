@@ -8,12 +8,13 @@ from flask_bcrypt import Bcrypt
 import psycopg2, itertools
 import json, datetime
 
-try:
-    conn = psycopg2.connect("dbname='my_db' user='postgres' host='ubuntu@52.14.246.136' password='!dangqhuy!'")
-except:
-    print "I am ubable to connect to the database"
+# try:
+#     conn = psycopg2.connect("dbname='my_db' user='postgres' host='ubuntu@52.14.246.136' password='!dangqhuy!'")
+# except:
+#     print "I am ubable to connect to the database"
+#     exit()
 
-cur = conn.cursor()
+# cur = conn.cursor()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '95cd8af52647b2a8e726d3badf339c'
@@ -24,28 +25,29 @@ monkey.patch_all()
 
 @app.route('/')
 def home():
-    user = None
-    keys = ('email', 'author', 'title', 'content', 'date_posted')
-    posts = []
-    dict_posts = []
-    with conn.cursor() as cur:
-        cur.execute('''SELECT 
-                        my_user.email,
-                        my_user.username,
-                        post.title,
-                        post.content,
-                        post.created
-                        FROM my_user
-                        INNER JOIN post ON my_user.id = post.user_id
-                        ORDER BY post.created DESC
-                    ''')
-        posts = cur.fetchall()
-    for post in posts:
-        dict_posts.append(dict(itertools.izip(keys, post)))
+    # user = None
+    # keys = ('email', 'author', 'title', 'content', 'date_posted')
+    # posts = []
+    # dict_posts = []
+    # with conn.cursor() as cur:
+    #     cur.execute('''SELECT 
+    #                     my_user.email,
+    #                     my_user.username,
+    #                     post.title,
+    #                     post.content,
+    #                     post.created
+    #                     FROM my_user
+    #                     INNER JOIN post ON my_user.id = post.user_id
+    #                     ORDER BY post.created DESC
+    #                 ''')
+    #     posts = cur.fetchall()
+    # for post in posts:
+    #     dict_posts.append(dict(itertools.izip(keys, post)))
 
-    if request.cookies.get('user'):
-        user = json.loads(request.cookies.get('user'))
-    return render_template('home.html', user=user, posts=dict_posts)
+    # if request.cookies.get('user'):
+    #     user = json.loads(request.cookies.get('user'))
+    # return render_template('home.html', user=user, posts=dict_posts)
+    return render_template('home.html')
 
 
 @app.route('/about')
@@ -125,6 +127,6 @@ def run_server():
 
 
 if __name__ == "__main__":
-  
-    app.run(debug=True, use_reloader=False)
+
+    app.run(host='18.222.128.254', port=22, debug=True, use_reloader=False)
     run_server()
