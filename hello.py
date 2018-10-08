@@ -73,7 +73,8 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
-    cur.execute("SELECT * FROM my_user")
+    with conn.cursor() as cur:
+        cur.execute("SELECT * FROM my_user")
     users = cur.fetchall()
     keys = ('id', 'password', 'username', 'email')
     dict_users = []
