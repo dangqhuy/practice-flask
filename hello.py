@@ -128,5 +128,5 @@ def run_server():
 
 if __name__ == "__main__":
 
-    app.run(host='18.222.128.254', port=22, debug=True, use_reloader=False)
+    app.run(debug=True, use_reloader=False)
     run_server()
