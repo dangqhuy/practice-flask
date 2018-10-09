@@ -9,7 +9,7 @@ import psycopg2, itertools
 import json, datetime
 
 try:
-    conn = psycopg2.connect("database='my_db' user='postgres' host='localhost' password='!dangqhuy!'")
+    conn = psycopg2.connect("dbname='my_db' user='postgres' host='localhost'")
 except:
     print "I am ubable to connect to the database"
     exit()
