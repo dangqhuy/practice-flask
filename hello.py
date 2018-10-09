@@ -5,28 +5,39 @@ from werkzeug.serving import run_with_reloader
 from werkzeug.debug import DebuggedApplication
 from forms import RegistrationForm, LoginForm, PostForm
 from flask_bcrypt import Bcrypt
+from raven.contrib.flask import Sentry
 import psycopg2, itertools
 import json, datetime
+import logging
+import sentry_sdk
+from sentry_sdk.integrations.flask import FlaskIntegration
+
+sentry_sdk.init(
+    dsn="https://91f552b8ffcd4823843a54894cecbee2@sentry.io/1297235",
+    integrations=[FlaskIntegration()]
+)
 
 
-try:
-    conn = psycopg2.connect("dbname='my_db' user='postgres' host='localhost' password='!dangqhuy!'")
-except:
-    print "I am ubable to connect to the database"
-    exit()
 
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '95cd8af52647b2a8e726d3badf339c'
 bcrypt = Bcrypt()
 
-
+sentry = Sentry(app, dsn="https://91f552b8ffcd4823843a54894cecbee2@sentry.io/1297235")
 
 monkey.patch_all()
-
+try:
+    conn = psycopg2.connect("dbname='my_db' user='postgres' host='localhost' password='!dangqhuy!'")
+except:
+    print "I am ubable to connect to the database"
+    sentry.captureMessage('I am ubable to connect to the database')
+    exit()
 
 @app.route('/')
 def home():
+  
+ 
     user = None
     keys = ('email', 'author', 'title', 'content', 'date_posted')
     posts = []
