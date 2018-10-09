@@ -77,6 +77,7 @@ def login():
     with conn.cursor() as cur:
         cur.execute("SELECT * FROM my_user")
         users = cur.fetchall()
+        print(users)
     keys = ('id', 'password', 'username', 'email')
     dict_users = []
     
