@@ -14,7 +14,6 @@ except:
     print "I am ubable to connect to the database"
     exit()
 
-cur = conn.cursor()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '95cd8af52647b2a8e726d3badf339c'
@@ -59,9 +58,10 @@ def register():
     form = RegistrationForm()
     if form.validate_on_submit():
         try:
-            cur.execute("INSERT INTO my_user (email, username, password) VALUES (%s, %s, %s)",
-            (form.email.data, form.username.data, bcrypt.generate_password_hash(form.password.data).decode('utf-8')))
-            conn.commit()
+            with conn.cursor() as cur:
+                cur.execute("INSERT INTO my_user (email, username, password) VALUES (%s, %s, %s)",
+                (form.email.data, form.username.data, bcrypt.generate_password_hash(form.password.data).decode('utf-8')))
+                conn.commit()
         except:
             flash('Sign Up Unsuccesful', 'danger')
             return redirect(url_for('register'))
@@ -73,9 +73,10 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
+    users = None
     with conn.cursor() as cur:
         cur.execute("SELECT * FROM my_user")
-    users = cur.fetchall()
+        users = cur.fetchall()
     keys = ('id', 'password', 'username', 'email')
     dict_users = []
     
@@ -109,9 +110,10 @@ def post():
 
     if form.validate_on_submit():
         try:
-            cur.execute('INSERT INTO post (title, content, user_id, created) VALUES (%s, %s, %s, %s)',
-            (form.title.data, form.content.data, user.get('id'), datetime.datetime.now()))
-            conn.commit()
+            with conn.cursor() as cur:
+                cur.execute('INSERT INTO post (title, content, user_id, created) VALUES (%s, %s, %s, %s)',
+                (form.title.data, form.content.data, user.get('id'), datetime.datetime.now()))
+                conn.commit()
         except:
             flash('Post Unsuccessful', 'danger')
         flash('Post Successful', 'success')
