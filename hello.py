@@ -7,6 +7,8 @@ from forms import RegistrationForm, LoginForm, PostForm
 from flask_bcrypt import Bcrypt
 import psycopg2, itertools
 import json, datetime
+import redis, os
+from rq import Worker, Queue, Connection
 
 try:
     conn = psycopg2.connect("dbname='my_db' user='postgres' host='localhost' password='!dangqhuy!'")
@@ -18,6 +20,10 @@ except:
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '95cd8af52647b2a8e726d3badf339c'
 bcrypt = Bcrypt()
+
+listen = ['default']
+redis_url = os.getenv('REDISTOGO_URL', 'redis://localhost:6379')
+conn_redis = redis.from_url(redis_url)
 
 monkey.patch_all()
 
@@ -124,6 +130,9 @@ def post():
 
 @run_with_reloader
 def run_server():
+    with Connection(conn_redis):
+        worker = Worker(list(map(Queue, listen)))
+        worker.work()
     http_server = WSGIServer(('', 5000),  DebuggedApplication(app))
     http_server.serve_forever()
 
