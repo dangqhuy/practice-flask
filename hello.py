@@ -84,6 +84,7 @@ def login():
     for user in users:
         dict_users.append(dict(itertools.izip(keys, user)))
 
+    print(dict_users)
     
     if form.validate_on_submit():
         for user in dict_users:
