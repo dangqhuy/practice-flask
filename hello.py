@@ -20,9 +20,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = '95cd8af52647b2a8e726d3badf339c'
 bcrypt = Bcrypt()
 
-listen = ['default']
-redis_url = os.getenv('REDISTOGO_URL', 'redis://localhost:6379')
-conn_redis = redis.from_url(redis_url)
+
 
 monkey.patch_all()
 
