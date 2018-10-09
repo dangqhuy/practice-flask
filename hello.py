@@ -78,7 +78,7 @@ def login():
         cur.execute("SELECT * FROM my_user")
         users = cur.fetchall()
         print(users)
-    keys = ('id', 'password', 'username', 'email')
+    keys = ('id', 'email', 'username', 'password')
     dict_users = []
     
     for user in users:
