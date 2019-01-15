@@ -1,0 +1,15 @@
+version: '3'
+services:
+  db:
+    image: postgres
+    ports:
+      - "5002:5432"
+  web:
+    build: .
+    command: python hello.py
+    volumes:
+      - .:/code
+    ports:
+     - "5001:5000"
+    depends_on:
+      - db
